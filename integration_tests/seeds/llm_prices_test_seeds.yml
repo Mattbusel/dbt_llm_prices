@@ -1,0 +1,11 @@
+version: 2
+
+seeds:
+  - name: llm_prices_test_usage
+    description: Usage rows with costs worked out in exact decimals by scripts/build_seeds.py.
+    config:
+      column_types:
+        model: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+        provider: "{{ 'string' if target.type in ['bigquery', 'databricks', 'spark'] else 'varchar' }}"
+        expected_cost_usd: "{{ 'float64' if target.type == 'bigquery' else 'double precision' if target.type in ['postgres', 'redshift'] else 'double' }}"
+        expected_batch_cost_usd: "{{ 'float64' if target.type == 'bigquery' else 'double precision' if target.type in ['postgres', 'redshift'] else 'double' }}"

@@ -1,0 +1,40 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [duckdb, postgres]
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd pg_isready --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults:
+      run:
+        working-directory: integration_tests
+    env:
+      DBT_PROFILES_DIR: ${{ github.workspace }}/integration_tests
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Seeds match the pinned llm-prices release
+        working-directory: .
+        run: |
+          python scripts/build_seeds.py
+          git diff --exit-code
+      - run: pip install "dbt-core>=1.8,<2" "dbt-${{ matrix.target }}"
+      - run: dbt deps
+      - run: dbt build --target ${{ matrix.target }}

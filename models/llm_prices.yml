@@ -1,0 +1,64 @@
+version: 2
+
+models:
+  - name: llm_prices_lookup
+    description: >
+      LLM API prices in USD per 1M tokens, one row per model key and provider to
+      match. Built from the llm_prices_models and llm_prices_keys seeds, which are
+      generated from a dated llm-prices release (https://github.com/Mattbusel/llm-prices).
+      The cost and price macros read this table. Rows with an empty
+      llm_prices_match_provider are the default provider for a key.
+    columns:
+      - name: llm_prices_key
+        description: Lower-cased model id, alias or provider/model id as usage logs carry it.
+        data_tests:
+          - not_null
+          - unique:
+              config:
+                where: "llm_prices_match_provider = ''"
+      - name: llm_prices_match_provider
+        description: Provider this row answers for, or an empty string for the default row of the key.
+        data_tests:
+          - not_null
+      - name: llm_prices_provider
+        description: Provider that sells the model at this price (openai, anthropic, google, ...).
+        data_tests:
+          - not_null
+      - name: llm_prices_model
+        description: Canonical model id in llm-prices.
+        data_tests:
+          - not_null
+      - name: llm_prices_model_name
+        description: Display name, where the provider gives one.
+      - name: llm_prices_status
+        description: "'listed' while the provider's pricing page shows the model, 'retired' after it drops off (prices as last listed)."
+      - name: llm_prices_input_usd_per_mtok
+        description: Standard input price.
+      - name: llm_prices_output_usd_per_mtok
+        description: Standard output price. Null for input-only models such as embeddings.
+      - name: llm_prices_cache_read_usd_per_mtok
+        description: Prompt-cache read price.
+      - name: llm_prices_cache_write_5m_usd_per_mtok
+        description: Prompt-cache write price, 5 minute TTL (Anthropic).
+      - name: llm_prices_cache_write_1h_usd_per_mtok
+        description: Prompt-cache write price, 1 hour TTL (Anthropic).
+      - name: llm_prices_cache_write_30m_usd_per_mtok
+        description: Prompt-cache write price, 30 minute retention.
+      - name: llm_prices_cache_write_12h_usd_per_mtok
+        description: Prompt-cache write price, 12 hour retention.
+      - name: llm_prices_batch_input_usd_per_mtok
+        description: Batch API input price.
+      - name: llm_prices_batch_output_usd_per_mtok
+        description: Batch API output price.
+      - name: llm_prices_long_context_threshold_tokens
+        description: Prompt size above which the long-context prices apply, where the model has them.
+      - name: llm_prices_long_context_input_usd_per_mtok
+        description: Input price above the long-context threshold.
+      - name: llm_prices_long_context_output_usd_per_mtok
+        description: Output price above the long-context threshold.
+      - name: llm_prices_source_url
+        description: Provider pricing page the price was read from.
+      - name: llm_prices_checked_on
+        description: Date the price was last checked against that page.
+      - name: llm_prices_note
+        description: Conditions the base price does not show (regional surcharges, tiers, retirement).

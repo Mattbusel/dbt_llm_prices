@@ -1,0 +1,79 @@
+version: 2
+
+macros:
+  - name: cost
+    description: >
+      SQL expression for the USD cost of one LLM call. Returns null when the model
+      is not in the price table. Example:
+      llm_prices.cost('model', 'input_tokens', 'output_tokens')
+    arguments:
+      - name: model_col
+        type: string
+        description: Column or expression holding the model id, matched case- and space-insensitively.
+      - name: input_tokens
+        type: string
+        description: Column or expression with uncached input tokens.
+      - name: output_tokens
+        type: string
+        description: Column or expression with output tokens.
+      - name: cache_read_tokens
+        type: string
+        description: Optional. Prompt-cache read tokens, priced at the cache read rate (input rate if the model has none).
+      - name: cache_write_tokens
+        type: string
+        description: Optional. Prompt-cache write tokens, priced at the cache write rate for cache_write_ttl (input rate if the model has none).
+      - name: provider_col
+        type: string
+        description: Optional. Provider column, for a model id more than one host prices. Null or empty falls back to the default provider.
+      - name: tier
+        type: string
+        description: "'standard' (default) or 'batch'."
+      - name: cache_write_ttl
+        type: string
+        description: "'5m' (default), '1h', '30m' or '12h'."
+  - name: price
+    description: >
+      Scalar subquery returning one price in USD per 1M tokens for a model, for custom
+      cost math. kind is one of input, output, cache_read, cache_write_5m, cache_write_1h,
+      cache_write_30m, cache_write_12h, batch_input, batch_output, long_context_input,
+      long_context_output.
+    arguments:
+      - name: model_col
+        type: string
+        description: Column or expression holding the model id.
+      - name: kind
+        type: string
+        description: Which price to return (default input).
+      - name: provider_col
+        type: string
+        description: Optional provider column.
+  - name: input_cost
+    description: USD cost of the uncached input tokens only.
+    arguments:
+      - name: model_col
+        type: string
+        description: Column or expression holding the model id.
+      - name: input_tokens
+        type: string
+        description: Column or expression with input tokens.
+      - name: provider_col
+        type: string
+        description: Optional provider column.
+      - name: tier
+        type: string
+        description: "'standard' (default) or 'batch'."
+  - name: output_cost
+    description: USD cost of the output tokens only.
+    arguments:
+      - name: model_col
+        type: string
+        description: Column or expression with the model id.
+      - name: output_tokens
+        type: string
+        description: Column or expression with output tokens.
+      - name: provider_col
+        type: string
+        description: Optional provider column.
+      - name: tier
+        type: string
+        description: "'standard' (default) or 'batch'."
